@@ -25,7 +25,8 @@ namespace Manager
             {
                 LoadData(Properties.Settings.Default.Filename);
             }
-            ShowKANSENData(this.KANSENData);
+            this.Filtered = this.KANSENData;
+            ShowKANSENData();
         }
 
         private void LoadData(string path)
@@ -50,12 +51,13 @@ namespace Manager
 
         private List<DataType> KANSENData;
         private SortedDictionary<string, int> Indexes;
+        private IEnumerable<DataType> Filtered;
 
-        private void ShowKANSENData(IEnumerable<DataType> datas)
+        private void ShowKANSENData()
         {
             ShowVariableData();
             this.KANSENDataGrid.Rows.Clear();
-            foreach(var data in datas)
+            foreach(var data in this.Filtered)
             {
                 var name = data.Name;
                 var gets = data.Gets ? "○" : "";
@@ -158,7 +160,8 @@ namespace Manager
                     }
                 }
                 ShowErrorMessageBox(exist, "はすでに存在します");
-                ShowKANSENData(this.KANSENData);
+                this.Filtered = this.KANSENData;
+                ShowKANSENData();
             }
         }
 
@@ -202,7 +205,8 @@ namespace Manager
             {
                 ShowErrorMessageBox(lists[i], errors[i].Message);
             }
-            ShowKANSENData(this.KANSENData);
+            this.Filtered = this.KANSENData;
+            ShowKANSENData();
         }
 
         private void SetLimitClick(object sender, EventArgs e)
@@ -377,8 +381,79 @@ namespace Manager
                     }
                 }
                 ShowErrorMessageBox(names, "は存在しません");
-                ShowKANSENData(this.KANSENData);
+                this.Filtered = this.KANSENData;
+                ShowKANSENData();
             }
+        }
+
+        private void FilterResetClick(object sender, EventArgs e)
+        {
+            this.Filtered = this.KANSENData;
+            ShowKANSENData();
+        }
+
+        private void NameFilterClick(object sender, EventArgs e)
+        {
+            var form = new AddKANSENForm();
+            if (form.ShowDialog() == DialogResult.OK)
+            {
+                this.Filtered = this.Filtered.Where(data => form.Names.Contains(data.Name));
+            }
+            ShowKANSENData();
+        }
+
+        private void NotThreeFilterClick(object sender, EventArgs e)
+        {
+            this.Filtered = this.Filtered.Where(data => data.BreakCount != 3);
+            ShowKANSENData();
+        }
+
+        private void NotAwakenFilterClick(object sender, EventArgs e)
+        {
+            this.Filtered = this.Filtered.Where(data => !data.Awaken);
+            ShowKANSENData();
+        }
+
+        private void NotRemodeledFilterClick(object sender, EventArgs e)
+        {
+            this.Filtered = this.Filtered.Where(data => data.RemodelingStatus.Level != null && !data.RemodelingStatus.Complete);
+            ShowKANSENData();
+        }
+
+        private void NotLoveFilterClick(object sender, EventArgs e)
+        {
+            this.Filtered = this.Filtered.Where(data => !data.Love);
+            ShowKANSENData();
+        }
+
+        private void NotStoryCompleteFilterClick(object sender, EventArgs e)
+        {
+            this.Filtered = this.Filtered.Where(data => data.StoryStatus == StoryStatus.Implement);
+            ShowKANSENData();
+        }
+
+        private void NotGetsFilterClick(object sender, EventArgs e)
+        {
+            this.Filtered = this.Filtered.Where(data => !data.Gets);
+            ShowKANSENData();
+        }
+
+        private void SortByBreakIncClick(object sender, EventArgs e)
+        {
+            this.Filtered = this.Filtered.OrderBy(data => data.BreakCount);
+            ShowKANSENData();
+        }
+
+        private void SortByBreakDecClick(object sender, EventArgs e)
+        {
+            this.Filtered = this.Filtered.OrderBy(data => 3 - data.BreakCount);
+            ShowKANSENData();
+        }
+
+        private void GetsFilterClick(object sender, EventArgs e)
+        {
+            this.Filtered = this.Filtered.Where(data => data.Gets);
+            ShowKANSENData();
         }
     }
 
