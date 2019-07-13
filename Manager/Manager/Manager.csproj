@@ -64,6 +64,12 @@
     <Compile Include="AddKANSENForm.Designer.cs">
       <DependentUpon>AddKANSENForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="AddRemodelForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AddRemodelForm.Designer.cs">
+      <DependentUpon>AddRemodelForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -80,6 +86,9 @@
     </Compile>
     <EmbeddedResource Include="AddKANSENForm.resx">
       <DependentUpon>AddKANSENForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AddRemodelForm.resx">
+      <DependentUpon>AddRemodelForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>

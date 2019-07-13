@@ -57,9 +57,7 @@ namespace Manager
                 var gets = data.Gets ? "○" : "";
                 var count = data.Gets ? data.BreakCount.ToString() : "";
                 var awaken = data.Awaken ? "○" : "";
-                var remodel =
-                    data.RemodelingStatus == RemodelingStatus.Unimplement ? "" :
-                    data.RemodelingStatus == RemodelingStatus.Waiting ? "実装済み" : "完了";
+                var remodel = data.RemodelingStatus.Complete ? "完了" : data.RemodelingStatus.Level.ToString();
                 var love = data.Love ? "○" : "";
                 var story =
                     data.StoryStatus == StoryStatus.Unimplement ? "" :
@@ -93,11 +91,11 @@ namespace Manager
                     {
                         ++awaken;
                     }
-                    if (data.RemodelingStatus != RemodelingStatus.Unimplement)
+                    if (data.RemodelingStatus.Level != null)
                     {
                         ++remodelImplement;
                     }
-                    if (data.RemodelingStatus == RemodelingStatus.Remodeled)
+                    if (data.RemodelingStatus.Complete)
                     {
                         ++remodeled;
                     }
@@ -228,15 +226,40 @@ namespace Manager
 
         private void ImplementRemodelClick(object sender, EventArgs e)
         {
-            var form = new AddKANSENForm();
+            var form = new AddRemodelForm();
             if (form.ShowDialog() == DialogResult.OK)
             {
+                var dict = new SortedDictionary<string, int>();
+                var names = new List<string>();
+                var error = new List<string>();
+                var duplicate = new List<string>();
+                foreach (var (name, level) in form.Data)
+                {
+                    if (dict.ContainsKey(name))
+                    {
+                        duplicate.Add(name);
+                    }
+                    else
+                    {
+                        if (level is int v && 1 <= v && v <= 100)
+                        {
+                            dict[name] = v;
+                            names.Add(name);
+                        }
+                        else
+                        {
+                            error.Add(name);
+                        }
+                    }
+                }
                 bool Check(DataType data)
                 {
-                    return data.RemodelingStatus != RemodelingStatus.Remodeled;
+                    return !data.RemodelingStatus.Complete;
                 }
-                AddKANSENData(form.Names, false, Check, data => data.RemodelingStatus = RemodelingStatus.Waiting,
-                    (Check, "は改造済みです"));
+                AddKANSENData(names, false, Check, data => data.RemodelingStatus = new RemodelingStatus(dict[data.Name], false),
+                    (Check, "の改造は完了しています"));
+                ShowErrorMessageBox(duplicate, "が重複しています、先頭のものを優先します");
+                ShowErrorMessageBox(error, "のレベル欄が異常です、100以下の数値にしてください");
             }
         }
 
@@ -251,13 +274,13 @@ namespace Manager
                 }
                 bool Implement(DataType data)
                 {
-                    return data.RemodelingStatus != RemodelingStatus.Unimplement;
+                    return data.RemodelingStatus.Level != null;
                 }
                 bool All(DataType data)
                 {
                     return Three(data) && Implement(data);
                 }
-                AddKANSENData(form.Names, true, All, data => data.RemodelingStatus = RemodelingStatus.Remodeled,
+                AddKANSENData(form.Names, true, All, data => data.RemodelingStatus = new RemodelingStatus(data.RemodelingStatus.Level, true),
                     (Three, "は3回限界突破していません"),
                     (Implement, "の改造は実装されていません"));
             }
@@ -352,11 +375,16 @@ namespace Manager
     }
 
     [Serializable]
-    public enum RemodelingStatus
+    public struct RemodelingStatus
     {
-        Unimplement,
-        Waiting,
-        Remodeled
+        public int? Level { get; }
+        public bool Complete { get; }
+
+        public RemodelingStatus(int? level, bool complete)
+        {
+            this.Level = level;
+            this.Complete = complete;
+        }
     }
 
     [Serializable]
@@ -384,7 +412,7 @@ namespace Manager
             this.Gets = false;
             this.BreakCount = 0;
             this.Awaken = false;
-            this.RemodelingStatus = RemodelingStatus.Unimplement;
+            this.RemodelingStatus = new RemodelingStatus();
             this.Love = false;
             this.StoryStatus = StoryStatus.Unimplement;
         }
