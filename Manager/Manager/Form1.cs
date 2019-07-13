@@ -36,6 +36,10 @@ namespace Manager
                 if(reader.Deserialize(fs) is List<DataType> list)
                 {
                     this.KANSENData = list;
+                    foreach (var i in Range(this.KANSENData.Count))
+                    {
+                        this.Indexes[this.KANSENData[i].Name] = i;
+                    }
                 }
                 else
                 {
@@ -150,7 +154,7 @@ namespace Manager
                     else
                     {
                         this.Indexes[n] = this.KANSENData.Count;
-                        this.KANSENData.Add(new DataType(n));
+                        this.KANSENData.Add(new DataType() { Name = n });
                     }
                 }
                 ShowErrorMessageBox(exist, "はすでに存在します");
@@ -339,7 +343,10 @@ namespace Manager
 
         private void SaveButtonClick(object sender, EventArgs e)
         {
-            var sfd = new SaveFileDialog();
+            var sfd = new SaveFileDialog()
+            {
+                Filter = "xml files(*.xml)|*.xml|All files (*.*)|*.+"
+            };
             if (sfd.ShowDialog() == DialogResult.OK)
             {
                 Properties.Settings.Default.Filename = sfd.FileName;
@@ -348,6 +355,7 @@ namespace Manager
                     var writer = new System.Xml.Serialization.XmlSerializer(typeof(List<DataType>));
                     writer.Serialize(fs, this.KANSENData);
                 }
+                Properties.Settings.Default.Save();
             }
         }
 
@@ -377,8 +385,8 @@ namespace Manager
     [Serializable]
     public struct RemodelingStatus
     {
-        public int? Level { get; }
-        public bool Complete { get; }
+        public int? Level { set; get; }
+        public bool Complete { set; get; }
 
         public RemodelingStatus(int? level, bool complete)
         {
@@ -398,7 +406,7 @@ namespace Manager
     [Serializable]
     public class DataType
     {
-        public string Name { get; }
+        public string Name { set; get; }
         public bool Gets { set; get; }
         public int BreakCount { set; get; }
         public bool Awaken { set; get; }
@@ -406,9 +414,9 @@ namespace Manager
         public bool Love { set; get; }
         public StoryStatus StoryStatus { get; set; }
 
-        public DataType(string name)
+        public DataType()
         {
-            this.Name = name;
+            this.Name = "";
             this.Gets = false;
             this.BreakCount = 0;
             this.Awaken = false;

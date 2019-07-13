@@ -7,7 +7,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using PEGer;
+using TrueRegex;
 using static UtilityLibrary.IntegerEnumerable;
+
 
 namespace Manager
 {
@@ -22,11 +25,12 @@ namespace Manager
         {
             get
             {
-                foreach (var i in Range(this.dataGridView1.Rows.Count - 1))
+                foreach(var line in this.richTextBox1.Lines)
                 {
+                    var ar = line.Split(',');
                     yield return (
-                        this.dataGridView1[0, i].Value.ToString(),
-                        int.TryParse(this.dataGridView1[1, i].Value.ToString(), out var level) ? (int?)level : null);
+                        ar[0],
+                        int.TryParse(ar[1], out var ret) && 1 <= ret && ret <= 100 ? (int?)ret : null);
                 }
             }
         }
